@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .Rproj.user
 .Rhistory
 .RData
@@ -43,4 +42,6 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
->>>>>>> e009c71b8362387d99a1a17aef1518aeaafb9da8
+
+# random generated stuffs
+.DS_Store
