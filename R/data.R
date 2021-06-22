@@ -12,7 +12,7 @@
 #' @source <https://www.github.com/YenWenWang/HapDipKinship>
 "pedigree"
 
-#' @title Relatedness of interest
+#' @title Individual pairs of interest
 #'
 #' @description A dataset denoting which relatives are of interest (for simulation).
 #'
@@ -24,4 +24,4 @@
 #'   \item{pairtype}{ploidy of ind1 and ind2.}
 #' }
 #' @source <https://www.github.com/YenWenWang/HapDipKinship>
-"RelOfInterest"
+"PairsOfInterest"

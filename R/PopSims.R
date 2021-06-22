@@ -80,7 +80,7 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
 #' A matrix including dirichlet params for the admixture of ancestral subpopulations.
 #' Rows denote ancestral subpopulations. Columns denote different admixture schemes.
 #'
-#' @param RelOfInterest A data frame describing focal relationships. Report all if none provided. See ?RelOfInterest
+#' @param PairsOfInterest A data frame describing focal relationships. Report all if none provided. See ?PairsOfInterest
 #'
 #' @param ancestryprop
 #' A vector with the length of number of column of ancestry
@@ -90,16 +90,16 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
 #' @param RelBasedKinshipThreshold
 #' A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details' in ?kinship.
 #'
-#' @return Kinships of RelOfInterest from simulated populations.
+#' @return Kinships of PairsOfInterest from simulated populations.
 #' @export
 #'
 #' @examples
 #' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
 #' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
-#' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,RelOfInterest)
-HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,RelOfInterest=NA,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
+#' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest)
+HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest=NA,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
 {
-  if(is.na(RelOfInterest)){
+  if(is.na(PairsOfInterest)){
     kinshipmatrix<-as.data.frame(t(combn(pedigree$id,2)))
     colnames(kinshipmatrix)<-c("ind1","ind2")
   }
@@ -149,9 +149,9 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,RelOfInterest=N
   ploidy<-data.frame(id=pedigree$id,ploidy=ifelse(pedigree$sex=="F",2,1))
   kins<-kinship(pedigreegeno,ploidy,RelBasedKinshipThreshold=RelBasedKinshipThreshold)
   ## dip pairs
-  RelOfInterest$temptempidid<-apply(RelOfInterest,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
+  PairsOfInterest$temptempidid<-apply(PairsOfInterest,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
   kins$temptempidid<-apply(kins,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
   kins<-kins[,-c(1:2)]
-  RelOfInterest<-merge(RelOfInterest,kins,by="temptempidid")[,-1]
-  return(RelOfInterest)
+  PairsOfInterest<-merge(PairsOfInterest,kins,by="temptempidid")[,-1]
+  return(PairsOfInterest)
 }

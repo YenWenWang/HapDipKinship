@@ -8,7 +8,7 @@ HapdipPedigreeSim(
   ancestrygenomatrix,
   pedigree,
   ancestry,
-  RelOfInterest = NA,
+  PairsOfInterest = NA,
   ancestryprop = NA,
   RelBasedKinshipThreshold = 0.1
 )
@@ -21,7 +21,7 @@ HapdipPedigreeSim(
 \item{ancestry}{A matrix including dirichlet params for the admixture of ancestral subpopulations.
 Rows denote ancestral subpopulations. Columns denote different admixture schemes.}
 
-\item{RelOfInterest}{A data frame describing focal relationships. Report all if none provided. See ?RelOfInterest}
+\item{PairsOfInterest}{A data frame describing focal relationships. Report all if none provided. See ?PairsOfInterest}
 
 \item{ancestryprop}{A vector with the length of number of column of ancestry
 denoting the probability of drawing individuals from each admixed populations.
@@ -30,7 +30,7 @@ Average sampling if none give.}
 \item{RelBasedKinshipThreshold}{A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details' in ?kinship.}
 }
 \value{
-Kinships of RelOfInterest from simulated populations.
+Kinships of PairsOfInterest from simulated populations.
 }
 \description{
 Simulate a haplodiploidy population pedigree and calculate kinships from a few subpopulations
@@ -38,5 +38,5 @@ Simulate a haplodiploidy population pedigree and calculate kinships from a few s
 \examples{
 ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
 ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
-HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,RelOfInterest)
+HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest)
 }
