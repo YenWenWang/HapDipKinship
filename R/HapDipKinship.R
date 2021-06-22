@@ -4,20 +4,38 @@
 #'
 #' @param genotypematrix A matrix encoding genotypes with columns of individuals and rows of SNP sites. (0=homozygotic reference, 1=heterozygotic, 2=homozygotic alternative).
 #'
-#' @param ploidy A data frame with two columns. First column is id (same as column names of genotype matrix). Second column is ploidy (1 or 2). Guess ploidy if not provided.
+#' @param ploidy
+#' A data frame with two columns.
+#' First column is id (same as column names of genotype matrix).
+#' Second column is ploidy (1 or 2).
+#' Guess ploidy if not provided.
 #'
-#' @param skipRelBased Binary variable for skipping relative-based kinship estimates or not. F if not provided. See 'Details.'
+#' @param skipRelBased
+#' Binary variable for skipping relative-based kinship estimates or not.
+#' F if not provided. See 'Details.'
 #'
 #' @param RelBasedKinshipThreshold A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'
 #'
-#' @return A vector encoding the genotype of a haploid individual (0,1).
+#' @return A dataframe encoding kinship and IBS0 for every pair of individuals
+#' @details
+#' This functions takes two step:
+#' The first step use KING-robust (Manichaikul et al. 2010) and XXX (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
+#' The second step use individuals related to the two individuals of interest as "references" to estimate kinship.
+#' The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
+#' Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
+#' Skipping this step will skip haploid-haploid kinship estimate.
+#'
 #' @export
 #'
 #' @examples
-#' dip<-sample(c(0:2),10,replace=T)
-#' meiosis(dip)
-kinship<-function(genotypematrix,ploidy,skipRelBased=F,RelBasedKinshipThreshold=0.1){
-  ##check if everyone has ploidy coded
+#' tbd
+kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThreshold=0.1){
+  if(is.na(ploidy)){
+    temp<-ifelse(apply(pedigreegeno,2,function(x)any(x==2)),2,1)
+    ploidy<-data.frame(id=names(temp),ploidy=temp)
+  }else if(!all(ploidy$id%in%colnames(genotypematrix))){  ##check if everyone has ploidy coded
+    stop("check ploidy!")
+  }
   kinshipmatrix<-as.data.frame(t(combn(colnames(genotypematrix),2)))
   tempkin<-t(apply(kinshipmatrix,1,function(x)
       if(all(ploidy$ploidy[ploidy$id%in%x[1:2]]==2)){
@@ -74,8 +92,16 @@ kinship<-function(genotypematrix,ploidy,skipRelBased=F,RelBasedKinshipThreshold=
   return(kinshipmatrix)
 }
 
-
 #' @export
+#'
+#' @examples
+#' ##Calculate kinship of a pair of full siblings
+#' dip<-rbinom(1000,2,0.5)
+#' hap<-rbinom(1000,1,0.5)
+#' ### without reference(vanilla)
+#' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1))
+#' ### with reference(related-based)
+#' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1),dipref=dip1)
 dipking<-function(dip1,dip2,dipref=NA){
   if(all(is.na(dipref))){
     set<-dip1%in%c(0,1,2)&dip2%in%c(0,1,2)
@@ -111,6 +137,15 @@ dipking<-function(dip1,dip2,dipref=NA){
 }
 
 #' @export
+#'
+#' @examples
+#' ##Calculate kinship of a pair of full siblings
+#' dip<-rbinom(1000,2,0.5)
+#' hap<-rbinom(1000,1,0.5)
+#' ### without reference(vanilla)
+#' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip))
+#' ### with reference(related-based)
+#' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip),dipref=dip)
 hapdipking<-function(dip,hap,dipref=NA){
   if(all(is.na(dipref))){
     set<-dip%in%c(0,1,2)&hap%in%c(0,1)
@@ -138,6 +173,12 @@ hapdipking<-function(dip,hap,dipref=NA){
 }
 
 #' @export
+#'
+#' @examples
+#' ##Calculate kinship of a pair of full siblings
+#' dip<-rbinom(1000,2,0.5)
+#' ### No Vanilla
+#' hapking(meiosis(dip),meiosis(dip),dipref=dip)
 hapking<-function(hap1,hap2,dipref){
   if(!is.matrix(dipref)){
     dipref<-matrix(dipref)

@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' dip<-sample(c(0:2),10,replace=T)
+#' dip<-rbinom(1000,2,0.5)
 #' meiosis(dip)
 meiosis<-function(dip){
   out<-ifelse(dip==0,0,ifelse(dip==2,1,-1))
@@ -28,26 +28,33 @@ meiosis<-function(dip){
 #' @export
 #'
 #' @examples
-#' hap1<-sample(c(0:1),10,replace=T)
-#' hap2<-sample(c(0:1),10,replace=T)
+#' hap1<-rbinom(1000,1,0.5)
+#' hap2<-rbinom(1000,1,0.5)
 #' anastomosis(hap1,hap2,replace=T)
 anastomosis<-function(hap1,hap2){
   return(hap1+hap2)
 }
 
+#' Simulate Population
+#'
+#' @description Simulate population with substructure using Balding-Nichols model.
+#'
+#' @param sites Number of sites simulated.
+#'
+#' @param thetak An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).
+#'
+#' @param pthresh A threshold to avoid low frequency SNPs. 0.1 if not provided.
+#'
+#' @param beta
+#' Shape parameter for beta distribution for simulating original allele frequency. 1 if not provided.
+#'
+#' @return A matrix of allele frequencies in ancestral subpopulations.
 #' @export
-PopulationSim<-function(sites,sampsize,thetak,pthresh=0.1,beta=1,popsizethresh=30){
-
+#'
+#' @examples
+#' PopulationSim(1000,c(0.05,0.15,0.25))
+PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
   npop<-length(thetak)
-  popsize<-c(round(gtools::rdirichlet(1,rep(1,npop))*sampsize))
-  while(any(is.na(popsize))|any(popsize<popsizethresh)){   #redo if some pop too small
-    popsize<-c(round(gtools::rdirichlet(1,rep(1,npop))*sampsize))
-  }
-  x<-0
-  while(sum(popsize)<sampsize){   #add individuals if the total number<sampsize
-    popsize[x%%npop+1]<-popsize[x%%npop+1]+1
-    x<-1
-  }
   ps<-rbeta(sites,shape1 = beta,shape2=beta)
   if(!is.na(pthresh)){
     rmsites<-ps<pthresh|ps>1-pthresh
@@ -56,21 +63,51 @@ PopulationSim<-function(sites,sampsize,thetak,pthresh=0.1,beta=1,popsizethresh=3
       rmsites<-ps<pthresh|ps>1-pthresh
     }
   }
-  subpopps<-sapply(thetak,function(z)t(sapply(ps,function(x){rbeta(1,x*(1-z)/z,(1-x)*(1-z)/z)})))
-  return(subpopps)
+  ancestryps<-sapply(thetak,function(z)t(sapply(ps,function(x){rbeta(1,x*(1-z)/z,(1-x)*(1-z)/z)})))
+  return(ancestryps)
 }
 
 
+#' Simulate Pedigree
+#'
+#' @description Simulate a haplodiploidy population pedigree and calculate kinships from a few subpopulations
+#'
+#' @param ancestrygenomatrix A matrix of allele frequencies in ancestral subpopulations.
+#'
+#' @param pedigree A data frame describing the simulation of a pedigree. See ?pedigree.
+#'
+#' @param ancestry
+#' A matrix including dirichlet params for the admixture of ancestral subpopulations.
+#' Rows denote ancestral subpopulations. Columns denote different admixture schemes.
+#'
+#' @param RelOfInterest A data frame describing focal relationships. Report all if none provided. See ?RelOfInterest
+#'
+#' @param ancestryprop
+#' A vector with the length of number of column of ancestry
+#' denoting the probability of drawing individuals from each admixed populations.
+#' Average sampling if none give.
+#'
+#' @param RelBasedKinshipThreshold
+#' A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details' in ?kinship.
+#'
+#' @return Kinships of RelOfInterest from simulated populations.
 #' @export
-HapdipPedigreeSim<-function(popgenomatrix,pedigree,RelOfInterest,ancestry,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
+#'
+#' @examples
+#' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
+#' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
+#' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,RelOfInterest)
+HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,RelOfInterest=NA,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
 {
-  #ancestry is a matrix with dirichlet params for popgenotypes (nrow(ancestry)==ncol(popgenomatrix))
-  #ancestryprop is a vector describing the proportions of each populations in pedigree
+  if(is.na(RelOfInterest)){
+    kinshipmatrix<-as.data.frame(t(combn(pedigree$id,2)))
+    colnames(kinshipmatrix)<-c("ind1","ind2")
+  }
   if(any((is.na(pedigree$mother)&!is.na(pedigree$father))|(!is.na(pedigree$mother)&is.na(pedigree$father))))
     stop("can't have single parent that's unknown")
   if(is.na(ancestryprop))
     ancestryprop<-rep(1/ncol(ancestry),ncol(ancestry))
-  pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(popgenomatrix))
+  pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(ancestrygenomatrix))
   colnames(pedigreegeno)<-pedigree$id
 
   ##unrelated samples
@@ -78,7 +115,7 @@ HapdipPedigreeSim<-function(popgenomatrix,pedigree,RelOfInterest,ancestry,ancest
   ##get ancestry for unrelated samples
   ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
         function(x)gtools::rdirichlet(1,x)))
-  unrelatedprob<-t(apply(popgenomatrix,1,function(y)rowSums(ancindv*y)))
+  unrelatedprob<-t(apply(ancestrygenomatrix,1,function(y)rowSums(ancindv*y)))
   pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
     apply(unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])],2,
           function(x)sapply(x,function(y)rbinom(1,2,y)))

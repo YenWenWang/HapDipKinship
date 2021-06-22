@@ -20,6 +20,6 @@ A data frame with 42 rows and 4 variables:
 pedigree
 }
 \description{
-A data set with parents of individuals.
+An example data set with parents of individuals.
 }
 \keyword{datasets}

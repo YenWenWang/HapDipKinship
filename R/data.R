@@ -1,6 +1,6 @@
 #' @title Pedigrees
 #'
-#' @description A data set with parents of individuals.
+#' @description An example data set with parents of individuals.
 #'
 #' @format A data frame with 42 rows and 4 variables:
 #' \describe{

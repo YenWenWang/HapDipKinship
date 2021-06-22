@@ -6,7 +6,7 @@
 \usage{
 kinship(
   genotypematrix,
-  ploidy,
+  ploidy = NA,
   skipRelBased = F,
   RelBasedKinshipThreshold = 0.1
 )
@@ -14,19 +14,30 @@ kinship(
 \arguments{
 \item{genotypematrix}{A matrix encoding genotypes with columns of individuals and rows of SNP sites. (0=homozygotic reference, 1=heterozygotic, 2=homozygotic alternative).}
 
-\item{ploidy}{A data frame with two columns. First column is id (same as column names of genotype matrix). Second column is ploidy (1 or 2). Guess ploidy if not provided.}
+\item{ploidy}{A data frame with two columns.
+First column is id (same as column names of genotype matrix).
+Second column is ploidy (1 or 2).
+Guess ploidy if not provided.}
 
-\item{skipRelBased}{Binary variable for skipping relative-based kinship estimates or not. F if not provided. See 'Details.'}
+\item{skipRelBased}{Binary variable for skipping relative-based kinship estimates or not.
+F if not provided. See 'Details.'}
 
 \item{RelBasedKinshipThreshold}{A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'}
 }
 \value{
-A vector encoding the genotype of a haploid individual (0,1).
+A dataframe encoding kinship and IBS0 for every pair of individuals
 }
 \description{
 Estimates the kinships for all combinations of pairs of individuals.
 }
+\details{
+This functions takes two step:
+The first step use KING-robust (Manichaikul et al. 2010) and (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
+The second step use individuals related to the two individuals of interest as "references" to estimate kinship.
+The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
+Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
+Skipping this step will skip haploid-haploid kinship estimate.
+}
 \examples{
-dip<-sample(c(0:2),10,replace=T)
-meiosis(dip)
+
 }
