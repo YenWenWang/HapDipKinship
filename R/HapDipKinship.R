@@ -1,6 +1,23 @@
+#' Kinship
+#'
+#' @description Estimates the kinships for all combinations of pairs of individuals.
+#'
+#' @param genotypematrix A matrix encoding genotypes with columns of individuals and rows of SNP sites. (0=homozygotic reference, 1=heterozygotic, 2=homozygotic alternative).
+#'
+#' @param ploidy A data frame with two columns. First column is id (same as column names of genotype matrix). Second column is ploidy (1 or 2). Guess ploidy if not provided.
+#'
+#' @param skipRelBased Binary variable for skipping relative-based kinship estimates or not. F if not provided. See 'Details.'
+#'
+#' @param RelBasedKinshipThreshold A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'
+#'
+#' @return A vector encoding the genotype of a haploid individual (0,1).
 #' @export
+#'
+#' @examples
+#' dip<-sample(c(0:2),10,replace=T)
+#' meiosis(dip)
 kinship<-function(genotypematrix,ploidy,skipRelBased=F,RelBasedKinshipThreshold=0.1){
-  ##check if everyone has ploidy coded 
+  ##check if everyone has ploidy coded
   kinshipmatrix<-as.data.frame(t(combn(colnames(genotypematrix),2)))
   tempkin<-t(apply(kinshipmatrix,1,function(x)
       if(all(ploidy$ploidy[ploidy$id%in%x[1:2]]==2)){
@@ -20,7 +37,7 @@ kinship<-function(genotypematrix,ploidy,skipRelBased=F,RelBasedKinshipThreshold=
   if(!skipRelBased){
     kinshipmatrix$kinshipRelBased<-NA
     kinshipmatrix$IBS0RelBased<-NA
-    
+
     for(pair in 1:nrow(kinshipmatrix)){
       inds<-c(kinshipmatrix$V1[pair],kinshipmatrix$V2[pair])
       submatrix<-lapply(inds,function(x)kinshipmatrix[kinshipmatrix$V1==x|kinshipmatrix$V2==x,])
@@ -38,21 +55,21 @@ kinship<-function(genotypematrix,ploidy,skipRelBased=F,RelBasedKinshipThreshold=
           if(ploidy$ploidy[ploidy$id%in%inds[1]]==1){
             kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
               hapdipking(genotypematrix[,inds[2]],genotypematrix[,inds[1]],genotypematrix[,x])}))
-            
+
           }else{
             kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
               hapdipking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}))
-            
+
           }
         }
-        
+
       }else{
         kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-NA
       }
-      
+
     }
   }
-  
+
   colnames(kinshipmatrix)[c(1:2)]<-c("ind1","ind2")
   return(kinshipmatrix)
 }
@@ -90,7 +107,7 @@ dipking<-function(dip1,dip2,dipref=NA){
     return(c(kinship=kinship,IBS0=IBS0))
 
   }
-  
+
 }
 
 #' @export
@@ -133,7 +150,7 @@ hapking<-function(hap1,hap2,dipref){
     N<-sum(x==1)
     Aa<-sum((hap1==0&hap2==1)|(hap1==1&hap2==0))
     return(c(kinship=1-Aa/N,IBS0=Aa/N))})
-  
+
   kinship<-median(results[1,])
   IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))])
   return(c(kinship=kinship,IBS0=IBS0))

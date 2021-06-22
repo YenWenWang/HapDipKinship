@@ -1,23 +1,27 @@
-#' @title Example Pedigree Data
+#' @title Pedigrees
 #'
-#' @description Example haplodiploidy pedigree for simulation 
+#' @description A data set with parents of individuals.
 #'
 #' @format A data frame with 42 rows and 4 variables:
 #' \describe{
-#'   \item{group}{Participant's group, A or B.}
-#'   \item{score}{The participant's score in hypothetical task.}
+#'   \item{id}{individuals' id.}
+#'   \item{father}{individual's father.}
+#'   \item{mother}{individual's mother}
+#'   \item{sex}{individuals' sex.}
 #' }
-#' @source <>
-"examplePedigree"
+#' @source <https://www.github.com/YenWenWang/HapDipKinship>
+"pedigree"
 
-#' @title Example Relationship Of Interest
+#' @title Relatedness of interest
 #'
-#' @description Example Relationship Of Interest
+#' @description A dataset denoting which relatives are of interest (for simulation).
 #'
-#' @format Two data frames with 60 rows and 2 variables:
+#' @format A data frame with 164 rows and 4 variables:
 #' \describe{
-#'   \item{group}{Participant's group, A or B.}
-#'   \item{score}{The participant's score in hypothetical task.}
+#'   \item{ind1}{individual 1.}
+#'   \item{ind1}{individual 2.}
+#'   \item{relationship}{manually coded relationship.}
+#'   \item{pairtype}{ploidy of ind1 and ind2.}
 #' }
-#' @source <>
-"exampleData"
+#' @source <https://www.github.com/YenWenWang/HapDipKinship>
+"RelOfInterest"

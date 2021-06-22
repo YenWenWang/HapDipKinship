@@ -1,86 +1,91 @@
+#' Meiosis
+#'
+#' @description Take a diploid individual and generate gamete
+#'
+#' @param dip A vector encoding the genotype of a diploid individual (0,1,2).
+#'
+#' @return A vector encoding the genotype of a haploid individual (0,1).
 #' @export
+#'
+#' @examples
+#' dip<-sample(c(0:2),10,replace=T)
+#' meiosis(dip)
 meiosis<-function(dip){
   out<-ifelse(dip==0,0,ifelse(dip==2,1,-1))
   out[out==-1]<-sample(c(0,1),sum(out==-1),replace = T)
   return(out)
 }
 
+#' Anastomosis
+#'
+#' @description Combine two gametes into a diploid individual
+#'
+#' @param hap1 A vector encoding the genotype of a haploid individual (0,1).
+#'
+#' @param hap2 A vector encoding the genotype of a haploid individual (0,1).
+#'
+#' @return A vector encoding the genotype of a diploid individual (0,1,2).
 #' @export
+#'
+#' @examples
+#' hap1<-sample(c(0:1),10,replace=T)
+#' hap2<-sample(c(0:1),10,replace=T)
+#' anastomosis(hap1,hap2,replace=T)
 anastomosis<-function(hap1,hap2){
   return(hap1+hap2)
 }
 
 #' @export
-admix_prop_completeadmixture<-function (labs, subpops = sort(unique(labs))) 
-{
-  ## bnpsd extension
-  if (!all(labs %in% subpops)) 
-    stop("provided `subpops` does not contain all labels in `labs`!")
-  n_ind <- length(labs)
-  k_subpops <- length(subpops)
-  admix_proportions <- matrix(1/length(subpops), nrow = n_ind, ncol = k_subpops)
-  colnames(admix_proportions) <- subpops
-  admix_proportions
+PopulationSim<-function(sites,sampsize,thetak,pthresh=0.1,beta=1,popsizethresh=30){
+
+  npop<-length(thetak)
+  popsize<-c(round(gtools::rdirichlet(1,rep(1,npop))*sampsize))
+  while(any(is.na(popsize))|any(popsize<popsizethresh)){   #redo if some pop too small
+    popsize<-c(round(gtools::rdirichlet(1,rep(1,npop))*sampsize))
+  }
+  x<-0
+  while(sum(popsize)<sampsize){   #add individuals if the total number<sampsize
+    popsize[x%%npop+1]<-popsize[x%%npop+1]+1
+    x<-1
+  }
+  ps<-rbeta(sites,shape1 = beta,shape2=beta)
+  if(!is.na(pthresh)){
+    rmsites<-ps<pthresh|ps>1-pthresh
+    while(any(rmsites)){
+      ps[rmsites]<-rbeta(sum(rmsites),shape1 = beta,shape2=beta)
+      rmsites<-ps<pthresh|ps>1-pthresh
+    }
+  }
+  subpopps<-sapply(thetak,function(z)t(sapply(ps,function(x){rbeta(1,x*(1-z)/z,(1-x)*(1-z)/z)})))
+  return(subpopps)
 }
 
-#' @export
-admix_prop_subadmixture<-function (labs, admixtheme, dirichletparam, subpops = sort(unique(labs))) 
-{
-  ## bnpsd extension
-  if (!all(labs %in% subpops)) 
-    stop("provided `subpops` does not contain all labels in `labs`!")
-  if (length(admixtheme)!=length(labs))
-    stop("`admixtheme` does not contain exact same individuals in `labs`!")
-  if(!is.matrix(dirichletparam))
-    stop("`dirichletparam` is not a matrix of dirichlet parameters for admixtheme!")
-  if (!all(unique(admixtheme)%in%colnames(dirichletparam)))
-    stop("some `admixtheme` are not included in the columns of `admixtheme`!")
-  if (!all(labs%in%row.names(dirichletparam)))
-    stop("some labels in `labs` are not included in the rows of `admixtheme`!")
-  
-  ## dirichlet
-  
-  n_ind <- length(labs)
-  k_subpops <- length(subpops)
-  unsortedproportions<-list()
-  x<-1
-  while(x<length(table(admixtheme))+1){
-    unsortedproportions<-c(unsortedproportions,list(gtools::rdirichlet(table(admixtheme)[x],dirichletparam[,x])))
-    x<-x+1
-  }
-  names(unsortedproportions)<-names(table(admixtheme))
-  x<-1
-  while(x<length(unsortedproportions)+1){
-    unsortedproportions[[x]]<-cbind(unsortedproportions[[x]],
-                                    paste(names(unsortedproportions)[x],c(1:nrow(unsortedproportions[[x]]))))
-    x<-x+1
-  }
-  unsortedproportions<-do.call(rbind,unsortedproportions)
-  
-  admixtheme_numbered<-paste(admixtheme,ave(admixtheme, admixtheme, FUN=seq_along))
-  admix_proportions<-unsortedproportions[match(unsortedproportions[,ncol(unsortedproportions)],admixtheme_numbered),]
-  admix_proportions<-admix_proportions[,-ncol(admix_proportions)]
-  admix_proportions<-t(apply(admix_proportions,1,as.numeric))
-  colnames(admix_proportions) <- subpops
-  admix_proportions
-}
 
 #' @export
-HapdipPedigreeSim<-function(genotypematrix,pedigree,RelOfInterest,RelBasedKinshipThreshold=0.1)
+HapdipPedigreeSim<-function(popgenomatrix,pedigree,RelOfInterest,ancestry,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
 {
+  #ancestry is a matrix with dirichlet params for popgenotypes (nrow(ancestry)==ncol(popgenomatrix))
+  #ancestryprop is a vector describing the proportions of each populations in pedigree
   if(any((is.na(pedigree$mother)&!is.na(pedigree$father))|(!is.na(pedigree$mother)&is.na(pedigree$father))))
     stop("can't have single parent that's unknown")
-  pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(genotypematrix))
+  if(is.na(ancestryprop))
+    ancestryprop<-rep(1/ncol(ancestry),ncol(ancestry))
+  pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(popgenomatrix))
   colnames(pedigreegeno)<-pedigree$id
-  
+
   ##unrelated samples
-  femaleunrelated<-pedigree$id[is.na(pedigree$mother)&is.na(pedigree$father)&pedigree$sex=="F"]
-  maleunrelated<-pedigree$id[is.na(pedigree$mother)&is.na(pedigree$father)&pedigree$sex=="M"]
-  s<-sample(ncol(genotypematrix),sum(length(femaleunrelated),length(maleunrelated)))
-  pedigreegeno[,femaleunrelated]<-genotypematrix[,s[1:length(femaleunrelated)]]
-  pedigreegeno[,maleunrelated]<-apply(
-    genotypematrix[,s[(length(femaleunrelated)+1):(length(femaleunrelated)+length(maleunrelated))]],2,meiosis)
-  
+  unrelated<-pedigree$id[is.na(pedigree$mother)&is.na(pedigree$father)]
+  ##get ancestry for unrelated samples
+  ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
+        function(x)gtools::rdirichlet(1,x)))
+  unrelatedprob<-t(apply(popgenomatrix,1,function(y)rowSums(ancindv*y)))
+  pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
+    apply(unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])],2,
+          function(x)sapply(x,function(y)rbinom(1,2,y)))
+  pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="M"]]]<-
+    apply(unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)],2,
+          function(x)sapply(x,function(y)rbinom(1,1,y)))
+
   ##loop for mating and meiosis
   while(any(pedigreegeno[1,]==-1)){
     temp<-pedigreegeno
