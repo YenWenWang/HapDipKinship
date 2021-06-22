@@ -33,7 +33,7 @@ ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
 
 Then, we can simulate the pedigree.  
 We provide an example `pedigree`:  
-<img src="./fig/pedigree.png" alt="drawing" width="600"/>  
+<img src="fig/pedigree.png" alt="drawing" width="600"/>  
 (drawn with R package `kinship2`)
 
 Using the given pedigree, we can simulate the pedigree with:
