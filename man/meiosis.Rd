@@ -16,6 +16,6 @@ A vector encoding the genotype of a haploid individual (0,1).
 Take a diploid individual and generate gamete
 }
 \examples{
-dip<-sample(c(0:2),10,replace=T)
+dip<-rbinom(1000,2,0.5)
 meiosis(dip)
 }

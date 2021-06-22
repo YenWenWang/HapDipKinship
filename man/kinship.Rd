@@ -32,12 +32,12 @@ Estimates the kinships for all combinations of pairs of individuals.
 }
 \details{
 This functions takes two step:
-The first step use KING-robust (Manichaikul et al. 2010) and (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
+The first step use KING-robust (Manichaikul et al. 2010) and XXX (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
 The second step use individuals related to the two individuals of interest as "references" to estimate kinship.
 The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
 Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
 Skipping this step will skip haploid-haploid kinship estimate.
 }
 \examples{
-
+tbd
 }

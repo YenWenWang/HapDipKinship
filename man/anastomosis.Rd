@@ -18,7 +18,7 @@ A vector encoding the genotype of a diploid individual (0,1,2).
 Combine two gametes into a diploid individual
 }
 \examples{
-hap1<-sample(c(0:1),10,replace=T)
-hap2<-sample(c(0:1),10,replace=T)
+hap1<-rbinom(1000,1,0.5)
+hap2<-rbinom(1000,1,0.5)
 anastomosis(hap1,hap2,replace=T)
 }
