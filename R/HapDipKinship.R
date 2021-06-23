@@ -1,6 +1,6 @@
-#' Kinship
+#' Kinship estimation
 #'
-#' @description Estimates the kinships for all combinations of pairs of individuals.
+#' @description Estimates kinships for all combinations of pairs of individuals.
 #'
 #' @param genotypematrix A matrix encoding genotypes with columns of individuals and rows of SNP sites. (0=homozygotic reference, 1=heterozygotic, 2=homozygotic alternative).
 #'
@@ -14,7 +14,8 @@
 #' Binary variable for skipping relative-based kinship estimates or not.
 #' F if not provided. See 'Details.'
 #'
-#' @param RelBasedKinshipThreshold A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'
+#' @param RelBasedKinshipThreshold
+#' A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'
 #'
 #' @return A dataframe encoding kinship and IBS0 for every pair of individuals
 #' @details
@@ -24,6 +25,9 @@
 #' The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
 #' Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
 #' Skipping this step will skip haploid-haploid kinship estimate.
+#'
+#' @references
+#' TBD
 #'
 #' @export
 #'
@@ -92,6 +96,17 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
   return(kinshipmatrix)
 }
 
+#' Diploid-diploid kinship estimation
+#'
+#' @description Estimate kinship for a pair of diploid individuals.
+#'
+#' @param dip1,dip2
+#' Vectors encoding the genotype of diploid individuals (0,1,2).
+#'
+#' @param dipref
+#' A vector encoding the genotype of the reference diploid individual (0,1,2).
+#' Perform vanilla KING-robust if none provided.
+#'
 #' @export
 #'
 #' @examples
@@ -136,6 +151,20 @@ dipking<-function(dip1,dip2,dipref=NA){
 
 }
 
+#' Haploid-diploid kinship estimation
+#'
+#' @description Estimate kinship between a haploid and a diploid individuals.
+#'
+#' @param dip
+#' A vector encoding the genotype of a diploid individual (0,1,2).
+#'
+#' @param hap
+#' A vector encoding the genotype of a haploid individual (0,1).
+#'
+#' @param dipref
+#' A vector encoding the genotype of the reference diploid individual (0,1,2).
+#' Perform vanilla hap-dip kinship estimation if none provided.
+#'
 #' @export
 #'
 #' @examples
@@ -172,6 +201,18 @@ hapdipking<-function(dip,hap,dipref=NA){
   }
 }
 
+
+#' Haploid-haploid kinship estimation
+#'
+#' @description Estimate kinship for a pair of haploid individuals.
+#'
+#' @param hap1,hap2
+#' Vectors encoding the genotype of haploid individuals (0,1).
+#'
+#' @param dipref
+#' A vector encoding the genotype of the reference diploid individual (0,1,2).
+#' Required!
+#'
 #' @export
 #'
 #' @examples

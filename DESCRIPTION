@@ -1,5 +1,5 @@
 Package: HapDipKinship
-Title: Kinship estimation in haploid-diploid populations.
+Title: HapDipKinship: Kinship estimation in haploid-diploid populations
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Yen-Wen",
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "ywang883@wisc.edu",
            comment = c(ORCID = "0000-0002-6851-1646"))
-Description: This package is for estimating kinship and simulating pedigrees in a haploid-diploid mixed dataset. It is largely based KING-robust (Manichaikul, et al. 2010).
+Description: This package is for estimating kinship and simulating pedigrees in a haploid-diploid mixed dataset. 
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
     license
 Encoding: UTF-8

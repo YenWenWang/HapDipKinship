@@ -49,6 +49,9 @@ anastomosis<-function(hap1,hap2){
 #' Shape parameter for beta distribution for simulating original allele frequency. 1 if not provided.
 #'
 #' @return A matrix of allele frequencies in ancestral subpopulations.
+#'
+#' @seealso [HapDipKinship::HapdipPedigreeSim()]
+#'
 #' @export
 #'
 #' @examples
@@ -74,38 +77,33 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
 #'
 #' @param ancestrygenomatrix A matrix of allele frequencies in ancestral subpopulations.
 #'
-#' @param pedigree A data frame describing the simulation of a pedigree. See ?pedigree.
+#' @param pedigree A data frame describing the simulation of a pedigree. See [HapDipKinship::pedigree].
 #'
 #' @param ancestry
 #' A matrix including dirichlet params for the admixture of ancestral subpopulations.
 #' Rows denote ancestral subpopulations. Columns denote different admixture schemes.
-#'
-#' @param PairsOfInterest A data frame describing focal relationships. Report all if none provided. See ?PairsOfInterest
 #'
 #' @param ancestryprop
 #' A vector with the length of number of column of ancestry
 #' denoting the probability of drawing individuals from each admixed populations.
 #' Average sampling if none give.
 #'
-#' @param RelBasedKinshipThreshold
-#' A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details' in ?kinship.
-#'
 #' @return Kinships of PairsOfInterest from simulated populations.
+#' @seealso
+#' [HapDipKinship::PopulationSim()],
+#' [HapDipKinship::kinship()]
+#'
 #' @export
 #'
 #' @examples
 #' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
 #' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
-#' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest)
-HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest=NA,ancestryprop=NA,RelBasedKinshipThreshold=0.1)
+#' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry)
+HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,ancestryprop=NA)
 {
-  if(is.na(PairsOfInterest)){
-    kinshipmatrix<-as.data.frame(t(combn(pedigree$id,2)))
-    colnames(kinshipmatrix)<-c("ind1","ind2")
-  }
   if(any((is.na(pedigree$mother)&!is.na(pedigree$father))|(!is.na(pedigree$mother)&is.na(pedigree$father))))
     stop("can't have single parent that's unknown")
-  if(is.na(ancestryprop))
+  if(any(is.na(ancestryprop)))
     ancestryprop<-rep(1/ncol(ancestry),ncol(ancestry))
   pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(ancestrygenomatrix))
   colnames(pedigreegeno)<-pedigree$id
@@ -146,12 +144,33 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,PairsOfInterest
       pedigreegeno<-temp
     }
   }
-  ploidy<-data.frame(id=pedigree$id,ploidy=ifelse(pedigree$sex=="F",2,1))
-  kins<-kinship(pedigreegeno,ploidy,RelBasedKinshipThreshold=RelBasedKinshipThreshold)
-  ## dip pairs
+  return(pedigreegeno)
+}
+
+#' Extract pairs of interest
+#'
+#' @description A helper function to extract kinships of specific pairs of individuals.
+#'
+#' @param kinships
+#' A data frame with at least two columns: ind1 and ind2
+#' @param PairsOfInterest
+#' A data frame describing focal relationships.
+#' All ids in ind1 and ind2 should be found in kinships (the order is not important).
+#' Report all if none provided. See [HapDipKinship::PairsOfInterest].
+#'
+#' @export
+#' @return Reduced data frame of Kinship.
+#' @examples
+#' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
+#' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
+#' kins<-HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry)
+#' ExtractPairsOfInterest(kins,PairsOfInterest)
+ExtractPairsOfInterest<-function(kinships,PairsOfInterest){
   PairsOfInterest$temptempidid<-apply(PairsOfInterest,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
-  kins$temptempidid<-apply(kins,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
-  kins<-kins[,-c(1:2)]
-  PairsOfInterest<-merge(PairsOfInterest,kins,by="temptempidid")[,-1]
+  kinships$temptempidid<-apply(kinships,1,function(x)paste(sort(x[c("ind1","ind2")]),collapse = "_"))
+  kinships<-kinships[,-c(1:2)]
+  PairsOfInterest<-merge(PairsOfInterest,kinships,by="temptempidid")[,-1]
   return(PairsOfInterest)
 }
+
+

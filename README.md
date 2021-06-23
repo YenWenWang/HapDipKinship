@@ -36,9 +36,9 @@ We provide an example `pedigree`:
 <p>
     <img src="fig/pedigree.png" alt="drawing" width="600"/>  
 </p>
-(drawn with R package `kinship2`)
+(drawn with R package `kinship2`)  
 
-Using the given pedigree, we can simulate the pedigree with:
+Using the given pedigree, we can simulate with:
 ```{r}
 HapdipPedigreeSim(ancestrygenomatrix, pedigree, ancestry, PairsOfInterest)
 ```

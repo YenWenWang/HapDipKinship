@@ -24,3 +24,6 @@ Simulate population with substructure using Balding-Nichols model.
 \examples{
 PopulationSim(1000,c(0.05,0.15,0.25))
 }
+\seealso{
+\code{\link[=HapdipPedigreeSim]{HapdipPedigreeSim()}}
+}

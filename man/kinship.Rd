@@ -2,7 +2,7 @@
 % Please edit documentation in R/HapDipKinship.R
 \name{kinship}
 \alias{kinship}
-\title{Kinship}
+\title{Kinship estimation}
 \usage{
 kinship(
   genotypematrix,
@@ -28,7 +28,7 @@ F if not provided. See 'Details.'}
 A dataframe encoding kinship and IBS0 for every pair of individuals
 }
 \description{
-Estimates the kinships for all combinations of pairs of individuals.
+Estimates kinships for all combinations of pairs of individuals.
 }
 \details{
 This functions takes two step:
@@ -40,4 +40,7 @@ Skipping this step will skip haploid-haploid kinship estimate.
 }
 \examples{
 tbd
+}
+\references{
+TBD
 }
