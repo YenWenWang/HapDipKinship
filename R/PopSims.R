@@ -113,7 +113,7 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,ancestryprop=NA
   ##get ancestry for unrelated samples
   ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
         function(x)gtools::rdirichlet(1,x)))
-  unrelatedprob<-t(apply(ancestrygenomatrix,1,function(y)rowSums(ancindv*y)))
+  unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
   pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
     apply(unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])],2,
           function(x)sapply(x,function(y)rbinom(1,2,y)))

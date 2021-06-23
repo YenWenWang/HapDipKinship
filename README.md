@@ -40,9 +40,14 @@ We provide an example `pedigree`:
 
 Using the given pedigree, we can simulate with:
 ```{r}
-HapdipPedigreeSim(ancestrygenomatrix, pedigree, ancestry, PairsOfInterest)
+pedigreegeno<-HapdipPedigreeSim(ancestrygenomatrix, pedigree, ancestry)
 ```
-This will directly spit out the kinship estimates of the pairs of individuals in PairsOfInterest.
+
+One can subset `pedigreegeno`, but we will use it directly.
+```{r}
+ploidy<-data.frame(id=pedigree$id,ploidy=ifelse(pedigree$sex=="F",2,1))
+kins<-kinship(pedigreegeno,ploidy,RelBasedKinshipThreshold=RelBasedKinshipThreshold)
+```
 
 
 ## Reference
