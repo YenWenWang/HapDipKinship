@@ -23,6 +23,6 @@ dip<-rbinom(1000,2,0.5)
 hap<-rbinom(1000,1,0.5)
 ### without reference(vanilla)
 hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip))
-### with reference(related-based)
+### with reference(relative-based)
 hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip),dipref=dip)
 }

@@ -4,7 +4,12 @@
 \alias{HapdipPedigreeSim}
 \title{Simulate Pedigree}
 \usage{
-HapdipPedigreeSim(ancestrygenomatrix, pedigree, ancestry, ancestryprop = NA)
+HapdipPedigreeSim(
+  ancestrygenomatrix,
+  pedigree,
+  ancestry = NA,
+  ancestryprop = NA
+)
 }
 \arguments{
 \item{ancestrygenomatrix}{A matrix of allele frequencies in ancestral subpopulations.}

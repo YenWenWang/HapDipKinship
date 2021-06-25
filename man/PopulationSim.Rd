@@ -9,7 +9,8 @@ PopulationSim(sites, thetak, pthresh = 0.1, beta = 1)
 \arguments{
 \item{sites}{Number of sites simulated.}
 
-\item{thetak}{An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).}
+\item{thetak}{An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).
+Needs to be higher than 0.}
 
 \item{pthresh}{A threshold to avoid low frequency SNPs. 0.1 if not provided.}
 

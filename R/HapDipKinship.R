@@ -34,7 +34,7 @@
 #' @examples
 #' tbd
 kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThreshold=0.1){
-  if(is.na(ploidy)){
+  if(any(is.na(ploidy))){
     temp<-ifelse(apply(pedigreegeno,2,function(x)any(x==2)),2,1)
     ploidy<-data.frame(id=names(temp),ploidy=temp)
   }else if(!all(ploidy$id%in%colnames(genotypematrix))){  ##check if everyone has ploidy coded
@@ -115,7 +115,7 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
 #' hap<-rbinom(1000,1,0.5)
 #' ### without reference(vanilla)
 #' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1))
-#' ### with reference(related-based)
+#' ### with reference(relative-based)
 #' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1),dipref=dip1)
 dipking<-function(dip1,dip2,dipref=NA){
   if(all(is.na(dipref))){
@@ -143,8 +143,8 @@ dipking<-function(dip1,dip2,dipref=NA){
       AaAa<-sum(dip1==1&dip2==1)
       AAaa<-sum((dip1==0&dip2==2)|(dip1==2&dip2==0))
       return(c(kinship=1/2-1/4*((4*AAaa-2*AaAa+N1+N2)/N),IBS0=AAaa/N))})
-    kinship<-median(results[1,])
-    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))])
+    kinship<-median(results[1,],na.rm = T)
+    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm = T)
     return(c(kinship=kinship,IBS0=IBS0))
 
   }
@@ -173,7 +173,7 @@ dipking<-function(dip1,dip2,dipref=NA){
 #' hap<-rbinom(1000,1,0.5)
 #' ### without reference(vanilla)
 #' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip))
-#' ### with reference(related-based)
+#' ### with reference(relative-based)
 #' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip),dipref=dip)
 hapdipking<-function(dip,hap,dipref=NA){
   if(all(is.na(dipref))){
@@ -195,8 +195,8 @@ hapdipking<-function(dip,hap,dipref=NA){
       N<-sum(x==1)
       AAa<-sum((dip==0&hap==1)|(dip==2&hap==0))
       return(c(kinship=1/2-AAa/N,IBS0=AAa/N))})
-    kinship<-median(results[1,])
-    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))])
+    kinship<-median(results[1,],na.rm=T)
+    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
     return(c(kinship=kinship,IBS0=IBS0))
   }
 }
@@ -233,8 +233,8 @@ hapking<-function(hap1,hap2,dipref){
     Aa<-sum((hap1==0&hap2==1)|(hap1==1&hap2==0))
     return(c(kinship=1-Aa/N,IBS0=Aa/N))})
 
-  kinship<-median(results[1,])
-  IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))])
+  kinship<-median(results[1,],na.rm=T)
+  IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
   return(c(kinship=kinship,IBS0=IBS0))
 }
 

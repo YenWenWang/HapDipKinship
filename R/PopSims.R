@@ -41,7 +41,9 @@ anastomosis<-function(hap1,hap2){
 #'
 #' @param sites Number of sites simulated.
 #'
-#' @param thetak An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).
+#' @param thetak
+#' An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).
+#' Needs to be higher than 0.
 #'
 #' @param pthresh A threshold to avoid low frequency SNPs. 0.1 if not provided.
 #'
@@ -99,21 +101,29 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
 #' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
 #' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
 #' HapdipPedigreeSim(ancestrygenomatrix,pedigree,ancestry)
-HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry,ancestryprop=NA)
+HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop=NA)
 {
   if(any((is.na(pedigree$mother)&!is.na(pedigree$father))|(!is.na(pedigree$mother)&is.na(pedigree$father))))
     stop("can't have single parent that's unknown")
   if(any(is.na(ancestryprop)))
     ancestryprop<-rep(1/ncol(ancestry),ncol(ancestry))
+  if(any(is.na(ancestry))&ncol(ancestrygenomatrix)>1)
+    stop("more than one ancestral subpopulation, please provide ancestry")
+
   pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(ancestrygenomatrix))
   colnames(pedigreegeno)<-pedigree$id
 
   ##unrelated samples
   unrelated<-pedigree$id[is.na(pedigree$mother)&is.na(pedigree$father)]
   ##get ancestry for unrelated samples
-  ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
-        function(x)gtools::rdirichlet(1,x)))
-  unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
+  if(ncol(ancestrygenomatrix)==1){
+    unrelatedprob<-matrix(rep(ancestrygenomatrix,length(unrelated)),ncol=length(unrelated))
+  }else{
+    ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
+                     function(x)gtools::rdirichlet(1,x)))
+    unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
+  }
+
   pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
     apply(unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])],2,
           function(x)sapply(x,function(y)rbinom(1,2,y)))
