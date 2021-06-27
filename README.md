@@ -46,7 +46,7 @@ pedigreegeno<-HapdipPedigreeSim(ancestrygenomatrix, pedigree, ancestry)
 One can subset `pedigreegeno`, but we will use it directly.
 ```{r}
 ploidy<-data.frame(id=pedigree$id,ploidy=ifelse(pedigree$sex=="F",2,1))
-kins<-kinship(pedigreegeno,ploidy,RelBasedKinshipThreshold=RelBasedKinshipThreshold)
+kins<-kinship(pedigreegeno,ploidy)
 ```
 
 

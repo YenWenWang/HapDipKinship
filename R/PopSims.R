@@ -43,7 +43,6 @@ anastomosis<-function(hap1,hap2){
 #'
 #' @param thetak
 #' An x-length vector of Fsts for x ancestral subpopulations (ancestral subpopulations vs total ancestral population).
-#' Needs to be higher than 0.
 #'
 #' @param pthresh A threshold to avoid low frequency SNPs. 0.1 if not provided.
 #'
@@ -68,7 +67,9 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
       rmsites<-ps<pthresh|ps>1-pthresh
     }
   }
-  ancestryps<-sapply(thetak,function(z)t(sapply(ps,function(x){rbeta(1,x*(1-z)/z,(1-x)*(1-z)/z)})))
+  ancestryps<-sapply(thetak,function(z)
+    if(z!=0){t(sapply(ps,function(x){rbeta(1,x*(1-z)/z,(1-x)*(1-z)/z)}))
+      }else{ps})
   return(ancestryps)
 }
 
