@@ -129,24 +129,27 @@ dipking<-function(dip1,dip2,dipref=NA){
     return(c(kinship=1/2-(sum(N1,N2)/min(N1,N2))/4+(AaAa-2*AAaa)/2/min(N1,N2),
              IBS0=AAaa/min(N1,N2)))
   }else{
-    if(!is.matrix(dipref)){
-      dipref<-matrix(dipref)
+    if(length(dipref)==0){
+      return(c(NA,NA))
+    }else{
+      if(!is.data.frame(dipref)){
+        dipref<-data.frame(dipref)
+      }
+      results<-apply(dipref,2,function(x){
+        set<-dip1%in%c(0,1,2)&dip2%in%c(0,1,2)&x%in%c(0,1,2)
+        dip1<-dip1[set]
+        dip2<-dip2[set]
+        x<-x[set]
+        N<-sum(x==1)
+        N1<-sum(dip1==1)
+        N2<-sum(dip2==1)
+        AaAa<-sum(dip1==1&dip2==1)
+        AAaa<-sum((dip1==0&dip2==2)|(dip1==2&dip2==0))
+        return(c(kinship=1/2-1/4*((4*AAaa-2*AaAa+N1+N2)/N),IBS0=AAaa/N))})
+      kinship<-median(results[1,],na.rm = T)
+      IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm = T)
+      return(c(kinship=kinship,IBS0=IBS0))
     }
-    results<-apply(dipref,2,function(x){
-      set<-dip1%in%c(0,1,2)&dip2%in%c(0,1,2)&x%in%c(0,1,2)
-      dip1<-dip1[set]
-      dip2<-dip2[set]
-      x<-x[set]
-      N<-sum(x==1)
-      N1<-sum(dip1==1)
-      N2<-sum(dip2==1)
-      AaAa<-sum(dip1==1&dip2==1)
-      AAaa<-sum((dip1==0&dip2==2)|(dip1==2&dip2==0))
-      return(c(kinship=1/2-1/4*((4*AAaa-2*AaAa+N1+N2)/N),IBS0=AAaa/N))})
-    kinship<-median(results[1,],na.rm = T)
-    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm = T)
-    return(c(kinship=kinship,IBS0=IBS0))
-
   }
 
 }
@@ -184,20 +187,24 @@ hapdipking<-function(dip,hap,dipref=NA){
     AAa<-sum((dip==0&hap==1)|(dip==2&hap==0))
     return(c(kinship=1/2-AAa/N,IBS0=AAa/N))
   }else{
-    if(!is.matrix(dipref)){
-      dipref<-matrix(dipref)
+    if(length(dipref)==0){
+      return(c(NA,NA))
+    }else{
+      if(!is.data.frame(dipref)){
+        dipref<-data.frame(dipref)
+      }
+      results<-apply(dipref,2,function(x){
+        set<-dip%in%c(0,1,2)&hap%in%c(0,1)&x%in%c(0,1,2)
+        dip<-dip[set]
+        hap<-hap[set]
+        x<-x[set]
+        N<-sum(x==1)
+        AAa<-sum((dip==0&hap==1)|(dip==2&hap==0))
+        return(c(kinship=1/2-AAa/N,IBS0=AAa/N))})
+      kinship<-median(results[1,],na.rm=T)
+      IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
+      return(c(kinship=kinship,IBS0=IBS0))
     }
-    results<-apply(dipref,2,function(x){
-      set<-dip%in%c(0,1,2)&hap%in%c(0,1)&x%in%c(0,1,2)
-      dip<-dip[set]
-      hap<-hap[set]
-      x<-x[set]
-      N<-sum(x==1)
-      AAa<-sum((dip==0&hap==1)|(dip==2&hap==0))
-      return(c(kinship=1/2-AAa/N,IBS0=AAa/N))})
-    kinship<-median(results[1,],na.rm=T)
-    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
-    return(c(kinship=kinship,IBS0=IBS0))
   }
 }
 
@@ -224,8 +231,8 @@ hapking<-function(hap1,hap2,dipref){
   if(length(dipref)==0){
     return(c(NA,NA))
   }else{
-    if(!is.matrix(dipref)){
-      dipref<-matrix(dipref)
+    if(!is.data.frame(dipref)){
+      dipref<-data.frame(dipref)
     }
     results<-apply(dipref,2,function(x){
       set<-hap1%in%c(0,1)&hap2%in%c(0,1)&x%in%c(0,1,2)
