@@ -69,7 +69,7 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
       if(any(sapply(related,length)!=0)){
         if(all(ploidy$ploidy[ploidy$id%in%inds]==1)){
           kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
-            hapking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}))
+            hapking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}),na.rm = T)
         }else if(all(ploidy$ploidy[ploidy$id%in%inds]==2)){
           kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
             dipking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}))
@@ -221,20 +221,25 @@ hapdipking<-function(dip,hap,dipref=NA){
 #' ### No Vanilla
 #' hapking(meiosis(dip),meiosis(dip),dipref=dip)
 hapking<-function(hap1,hap2,dipref){
-  if(!is.matrix(dipref)){
-    dipref<-matrix(dipref)
-  }
-  results<-apply(dipref,2,function(x){
-    set<-hap1%in%c(0,1)&hap2%in%c(0,1)&x%in%c(0,1,2)
-    hap1<-hap1[set]
-    hap2<-hap2[set]
-    x<-x[set]
-    N<-sum(x==1)
-    Aa<-sum((hap1==0&hap2==1)|(hap1==1&hap2==0))
-    return(c(kinship=1-Aa/N,IBS0=Aa/N))})
+  if(length(dipref)==0){
+    return(c(NA,NA))
+  }else{
+    if(!is.matrix(dipref)){
+      dipref<-matrix(dipref)
+    }
+    results<-apply(dipref,2,function(x){
+      set<-hap1%in%c(0,1)&hap2%in%c(0,1)&x%in%c(0,1,2)
+      hap1<-hap1[set]
+      hap2<-hap2[set]
+      x<-x[set]
+      N<-sum(x==1)
+      Aa<-sum((hap1==0&hap2==1)|(hap1==1&hap2==0))
+      return(c(kinship=1-Aa/N,IBS0=Aa/N))})
 
-  kinship<-median(results[1,],na.rm=T)
-  IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
-  return(c(kinship=kinship,IBS0=IBS0))
+    kinship<-median(results[1,],na.rm=T)
+    IBS0<-median(results[2,which(abs(results[1,] - kinship) == min(abs(results[1,] - kinship)))],na.rm=T)
+    return(c(kinship=kinship,IBS0=IBS0))
+  }
+
 }
 
