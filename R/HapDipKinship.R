@@ -35,7 +35,7 @@
 #' tbd
 kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThreshold=0.1){
   if(any(is.na(ploidy))){
-    temp<-ifelse(apply(pedigreegeno,2,function(x)any(x==2)),2,1)
+    temp<-ifelse(apply(genotypematrix,2,function(x)any(x==2,na.rm = T)),2,1)
     ploidy<-data.frame(id=names(temp),ploidy=temp)
   }else if(!all(ploidy$id%in%colnames(genotypematrix))){  ##check if everyone has ploidy coded
     stop("check ploidy!")
@@ -61,11 +61,13 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
     kinshipmatrix$IBS0RelBased<-NA
 
     for(pair in 1:nrow(kinshipmatrix)){
+      svMisc::progress(pair,nrow(kinshipmatrix))
       inds<-c(kinshipmatrix$V1[pair],kinshipmatrix$V2[pair])
       submatrix<-lapply(inds,function(x)kinshipmatrix[kinshipmatrix$V1==x|kinshipmatrix$V2==x,])
       related<-lapply(submatrix,function(x)which(x$kinship>RelBasedKinshipThreshold))
       related<-mapply(function(x,y)unique(c(y$V1[x][y$V1[x]%in%ploidy$id[ploidy$ploidy==2]],
                         y$V2[x][y$V2[x]%in%ploidy$id[ploidy$ploidy==2]])),related,submatrix)
+      related<-mapply(function(x,y){ifelse(ploidy$ploidy[ploidy$id==y]==2,c(x,y),x)},related,as.list(inds))
       if(any(sapply(related,length)!=0)){
         if(all(ploidy$ploidy[ploidy$id%in%inds]==1)){
           kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
