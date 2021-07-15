@@ -67,7 +67,7 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
       related<-lapply(submatrix,function(x)which(x$kinship>RelBasedKinshipThreshold))
       related<-mapply(function(x,y)unique(c(y$V1[x][y$V1[x]%in%ploidy$id[ploidy$ploidy==2]],
                         y$V2[x][y$V2[x]%in%ploidy$id[ploidy$ploidy==2]])),related,submatrix)
-      related<-mapply(function(x,y){ifelse(ploidy$ploidy[ploidy$id==y]==2,c(x,y),x)},related,as.list(inds))
+      related<-mapply(function(x,y){if(ploidy$ploidy[ploidy$id==y]==2){unique(c(x,y))}else{x}},related,inds,SIMPLIFY = F)
       if(any(sapply(related,length)!=0)){
         if(all(ploidy$ploidy[ploidy$id%in%inds]==1)){
           kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
