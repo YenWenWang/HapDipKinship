@@ -74,7 +74,7 @@ PopulationSim<-function(sites,thetak,pthresh=0.1,beta=1){
 }
 
 
-#' Simulate Pedigree
+#' Simulate Haplodiploidy Pedigree
 #'
 #' @description Simulate a haplodiploidy population pedigree and calculate kinships from a few subpopulations
 #'
@@ -124,12 +124,19 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop
                      function(x)gtools::rdirichlet(1,x)))
     unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
   }
-
+  tempprob<-unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])]
+  if(is.matrix(tempprob)){
+    tempprob<-as.matrix(tempprob)
+  }
   pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
-    apply(unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])],2,
+    apply(tempprob,2,
           function(x)sapply(x,function(y)rbinom(1,2,y)))
+  tempprob<-unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)]
+  if(is.matrix(tempprob)){
+    tempprob<-as.matrix(tempprob)
+  }
   pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="M"]]]<-
-    apply(unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)],2,
+    apply(tempprob,2,
           function(x)sapply(x,function(y)rbinom(1,1,y)))
 
   ##loop for mating and meiosis
@@ -148,6 +155,82 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop
         temp[,sample]<-
           meiosis(pedigreegeno[,pedigree$mother[pedigree$id==sample]])
       }
+    }
+    if(all(pedigreegeno==temp)){
+      stop("stuck in loop, check pedigree!")
+    }else{
+      pedigreegeno<-temp
+    }
+  }
+  return(pedigreegeno)
+}
+
+
+#' Simulate Diploid Pedigree
+#'
+#' @description Simulate a diploid population pedigree and calculate kinships from a few subpopulations
+#'
+#' @param ancestrygenomatrix A matrix of allele frequencies in ancestral subpopulations.
+#'
+#' @param pedigree A data frame describing the simulation of a pedigree. See [HapDipKinship::pedigree].
+#'
+#' @param ancestry
+#' A matrix including dirichlet params for the admixture of ancestral subpopulations.
+#' Rows denote ancestral subpopulations. Columns denote different admixture schemes.
+#'
+#' @param ancestryprop
+#' A vector with the length of number of column of ancestry
+#' denoting the probability of drawing individuals from each admixed populations.
+#' Average sampling if none give.
+#'
+#' @return Kinships of PairsOfInterest from simulated populations.
+#' @seealso
+#' [HapDipKinship::PopulationSim()],
+#' [HapDipKinship::kinship()]
+#'
+#' @export
+#'
+#' @examples
+#' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
+#' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
+#' DipPedigreeSim(ancestrygenomatrix,pedigree,ancestry)
+DipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop=NA)
+{
+  if(any((is.na(pedigree$mother)&!is.na(pedigree$father))|(!is.na(pedigree$mother)&is.na(pedigree$father))))
+    stop("can't have single parent that's unknown")
+  if(any(is.na(ancestryprop)))
+    ancestryprop<-rep(1/ncol(ancestry),ncol(ancestry))
+  if(any(is.na(ancestry))&ncol(ancestrygenomatrix)>1)
+    stop("more than one ancestral subpopulation, please provide ancestry")
+
+  pedigreegeno<-matrix(-1,ncol=nrow(pedigree),nrow=nrow(ancestrygenomatrix))
+  colnames(pedigreegeno)<-pedigree$id
+
+  ##unrelated samples
+  unrelated<-pedigree$id[is.na(pedigree$mother)&is.na(pedigree$father)]
+  ##get ancestry for unrelated samples
+  if(ncol(ancestrygenomatrix)==1){
+    unrelatedprob<-matrix(rep(ancestrygenomatrix,length(unrelated)),ncol=length(unrelated))
+  }else{
+    ancindv<-t(apply(ancestry[,sample(c(1:ncol(ancestry)),length(unrelated),replace = T,prob=ancestryprop)],2,
+                     function(x)gtools::rdirichlet(1,x)))
+    unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
+  }
+
+  pedigreegeno[,unrelated]<-apply(unrelatedprob,2,
+          function(x)sapply(x,function(y)rbinom(1,2,y)))
+
+  ##loop for mating and meiosis
+  while(any(pedigreegeno[1,]==-1)){
+    temp<-pedigreegeno
+    unfinished<-names(which(temp[1,pedigree$id]==-1))
+    pedigreesubset<-pedigree[pedigree$id%in%unfinished,]
+    workable<-pedigreesubset$id[pedigreegeno[1,pedigreesubset$mother]!=-1&
+                                  pedigreegeno[1,pedigreesubset$father]!=-1]
+    for(sample in workable){
+      temp[,sample]<-
+        anastomosis(meiosis(pedigreegeno[,pedigree$mother[pedigree$id==sample]]),
+                    meiosis(pedigreegeno[,pedigree$father[pedigree$id==sample]]))
     }
     if(all(pedigreegeno==temp)){
       stop("stuck in loop, check pedigree!")
