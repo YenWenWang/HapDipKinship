@@ -124,20 +124,27 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop
                      function(x)gtools::rdirichlet(1,x)))
     unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
   }
-  tempprob<-unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])]
-  if(!is.matrix(tempprob)){
-    tempprob<-as.matrix(tempprob)
+
+  if(any(pedigree$sex)=="F"){
+    tempprob<-unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])]
+    if(!is.matrix(tempprob)){
+      tempprob<-as.matrix(tempprob)
+    }
+    pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
+      apply(tempprob,2,
+            function(x)sapply(x,function(y)rbinom(1,2,y)))
   }
-  pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="F"]]]<-
-    apply(tempprob,2,
-          function(x)sapply(x,function(y)rbinom(1,2,y)))
-  tempprob<-unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)]
-  if(!is.matrix(tempprob)){
-    tempprob<-as.matrix(tempprob)
+
+  if(any(pedigree$sex)=="M"){
+    tempprob<-unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)]
+    if(!is.matrix(tempprob)){
+      tempprob<-as.matrix(tempprob)
+    }
+    pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="M"]]]<-
+      apply(tempprob,2,
+            function(x)sapply(x,function(y)rbinom(1,1,y)))
   }
-  pedigreegeno[,unrelated[unrelated%in%pedigree$id[pedigree$sex=="M"]]]<-
-    apply(tempprob,2,
-          function(x)sapply(x,function(y)rbinom(1,1,y)))
+
 
   ##loop for mating and meiosis
   while(any(pedigreegeno[1,]==-1)){
