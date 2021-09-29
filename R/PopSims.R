@@ -125,7 +125,7 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop
     unrelatedprob<-ancestrygenomatrix%*%t(ancindv)
   }
 
-  if(any(pedigree$sex)=="F"){
+  if(any(pedigree$sex=="F")){
     tempprob<-unrelatedprob[,1:sum(unrelated%in%pedigree$id[pedigree$sex=="F"])]
     if(!is.matrix(tempprob)){
       tempprob<-as.matrix(tempprob)
@@ -135,7 +135,7 @@ HapdipPedigreeSim<-function(ancestrygenomatrix,pedigree,ancestry=NA,ancestryprop
             function(x)sapply(x,function(y)rbinom(1,2,y)))
   }
 
-  if(any(pedigree$sex)=="M"){
+  if(any(pedigree$sex=="M")){
     tempprob<-unrelatedprob[,(sum(unrelated%in%pedigree$id[pedigree$sex=="F"])+1):length(unrelated)]
     if(!is.matrix(tempprob)){
       tempprob<-as.matrix(tempprob)
