@@ -1,5 +1,5 @@
 # HapDipKinship
-This is a package containing algorithms to estimate kinship in haploid-diploid mixed populations. These algorithms are strongly inspired by KING-robust. 
+This is a package containing algorithms, exKING-robust and KIMGENS, to estimate kinship in haploid-diploid mixed populations. These algorithms are strongly inspired by KING-robust. 
 
 ## Installation
 To install this package, run
@@ -8,11 +8,8 @@ devtools::install_github("YenWenWang/HapDipKinship")
 ```
 
 ## Kinship estimation
-This package includes algorithms to estimate diploid-diploid, diploid-haploid and haploid-haploid kinships.  
-For example,
-```{r}
-### need to provide some sort of data here
-```
+This package includes algorithms, exKING-robust and KIMGENS, to estimate diploid-diploid, diploid-haploid and haploid-haploid kinships.  
+Example will be given below in simulations.
 
 ## Simulations
 This package also allows to simulate haplodiploidy ancestry (e.g. Hymenoptera). Alternation of generations (e.g. algae) is still under development.
@@ -51,4 +48,4 @@ kins<-kinship(pedigreegeno,ploidy)
 
 
 ## Reference
-Wang et al. in prep. Kinship algorithm for haploid-diploid mixed populations.
+Wang, Y-W and Ané, C. in prep. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure.

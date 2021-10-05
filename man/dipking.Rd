@@ -10,7 +10,7 @@ dipking(dip1, dip2, dipref = NA)
 \item{dip1, dip2}{Vectors encoding the genotype of diploid individuals (0,1,2).}
 
 \item{dipref}{A vector encoding the genotype of the reference diploid individual (0,1,2).
-Perform vanilla KING-robust if none provided.}
+Perform exKING-robust if none provided.}
 }
 \description{
 Estimate kinship for a pair of diploid individuals.
@@ -19,8 +19,8 @@ Estimate kinship for a pair of diploid individuals.
 ##Calculate kinship of a pair of full siblings
 dip<-rbinom(1000,2,0.5)
 hap<-rbinom(1000,1,0.5)
-### without reference(vanilla)
+### without reference(exKING-robust)
 dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1))
-### with reference(relative-based)
+### with reference(KIMGENS)
 dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1),dipref=dip1)
 }

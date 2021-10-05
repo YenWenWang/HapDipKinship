@@ -12,7 +12,7 @@ hapdipking(dip, hap, dipref = NA)
 \item{hap}{A vector encoding the genotype of a haploid individual (0,1).}
 
 \item{dipref}{A vector encoding the genotype of the reference diploid individual (0,1,2).
-Perform vanilla hap-dip kinship estimation if none provided.}
+Perform exKING-robust hap-dip kinship estimation if none provided.}
 }
 \description{
 Estimate kinship between a haploid and a diploid individuals.
@@ -21,8 +21,8 @@ Estimate kinship between a haploid and a diploid individuals.
 ##Calculate kinship of a pair of full siblings
 dip<-rbinom(1000,2,0.5)
 hap<-rbinom(1000,1,0.5)
-### without reference(vanilla)
+### without reference(exKING-robust)
 hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip))
-### with reference(relative-based)
+### with reference(KIMGENS)
 hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip),dipref=dip)
 }

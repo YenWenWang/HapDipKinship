@@ -18,6 +18,6 @@ Estimate kinship for a pair of haploid individuals.
 \examples{
 ##Calculate kinship of a pair of full siblings
 dip<-rbinom(1000,2,0.5)
-### No Vanilla
+### No exKING-robust
 hapking(meiosis(dip),meiosis(dip),dipref=dip)
 }

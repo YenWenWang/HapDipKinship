@@ -10,20 +10,20 @@
 #' Second column is ploidy (1 or 2).
 #' Guess ploidy if not provided.
 #'
-#' @param skipRelBased
-#' Binary variable for skipping relative-based kinship estimates or not.
+#' @param skipKIMGENS
+#' Binary variable for skipping KIMGENS kinship estimates or not.
 #' F if not provided. See 'Details.'
 #'
-#' @param RelBasedKinshipThreshold
-#' A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'
+#' @param KIMGENSThreshold
+#' A kinship threshold for defining "relatives" in KIMGENS kinship. 0.1 if not provided. See 'Details.'
 #'
 #' @return A dataframe encoding kinship and IBS0 for every pair of individuals
 #' @details
 #' This functions takes two step:
-#' The first step use KING-robust (Manichaikul et al. 2010) and XXX (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
+#' The first step use exKING-robust (including KING-robust (Manichaikul et al. 2010)) to estimate kinship between two diploids and kinship between a haploid and a diploid.
 #' The second step use individuals related to the two individuals of interest as "references" to estimate kinship.
 #' The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
-#' Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
+#' Relatives are defined by if the kinship estimates from the first step are larger than KIMGENSThreshold.
 #' Skipping this step will skip haploid-haploid kinship estimate.
 #'
 #' @references
@@ -32,8 +32,11 @@
 #' @export
 #'
 #' @examples
-#' tbd
-kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThreshold=0.1){
+#' ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
+#' ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
+#' pedgeno<-HapdipPedigreeSim(ancestrygenomatrix,pedigree[1:18,],ancestry)
+#' kinship(pedgeno)
+kinship<-function(genotypematrix,ploidy=NA,skipKIMGENS=F,KIMGENSThreshold=0.1){
   if(any(is.na(ploidy))){
     temp<-ifelse(apply(genotypematrix,2,function(x)any(x==2,na.rm = T)),2,1)
     ploidy<-data.frame(id=names(temp),ploidy=temp)
@@ -53,42 +56,42 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
       }else{
         return(c(kinship=NA,IBS0=NA))
       }))
-  colnames(tempkin)<-c("kinship","IBS0")
+  colnames(tempkin)<-c("kinshipexKING","IBS0exKING")
   kinshipmatrix<-cbind(kinshipmatrix,tempkin)
 
-  if(!skipRelBased){
-    kinshipmatrix$kinshipRelBased<-NA
-    kinshipmatrix$IBS0RelBased<-NA
+  if(!skipKIMGENS){
+    kinshipmatrix$kinshipKIMGENS<-NA
+    kinshipmatrix$IBS0KIMGENS<-NA
 
     for(pair in 1:nrow(kinshipmatrix)){
       svMisc::progress(pair,nrow(kinshipmatrix))
       inds<-c(kinshipmatrix$V1[pair],kinshipmatrix$V2[pair])
       submatrix<-lapply(inds,function(x)kinshipmatrix[kinshipmatrix$V1==x|kinshipmatrix$V2==x,])
-      related<-lapply(submatrix,function(x)which(x$kinship>RelBasedKinshipThreshold))
+      related<-lapply(submatrix,function(x)which(x$kinship>KIMGENSThreshold))
       related<-mapply(function(x,y)unique(c(y$V1[x][y$V1[x]%in%ploidy$id[ploidy$ploidy==2]],
                         y$V2[x][y$V2[x]%in%ploidy$id[ploidy$ploidy==2]])),related,submatrix)
       related<-mapply(function(x,y){if(ploidy$ploidy[ploidy$id==y]==2){unique(c(x,y))}else{x}},related,inds,SIMPLIFY = F)
       if(any(sapply(related,length)!=0)){
         if(all(ploidy$ploidy[ploidy$id%in%inds]==1)){
-          kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
+          kinshipmatrix[pair,c("kinshipKIMGENS","IBS0KIMGENS")]<-rowMeans(sapply(related,function(x){
             hapking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}),na.rm = T)
         }else if(all(ploidy$ploidy[ploidy$id%in%inds]==2)){
-          kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
+          kinshipmatrix[pair,c("kinshipKIMGENS","IBS0KIMGENS")]<-rowMeans(sapply(related,function(x){
             dipking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}))
         }else{
           if(ploidy$ploidy[ploidy$id%in%inds[1]]==1){
-            kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
+            kinshipmatrix[pair,c("kinshipKIMGENS","IBS0KIMGENS")]<-rowMeans(sapply(related,function(x){
               hapdipking(genotypematrix[,inds[2]],genotypematrix[,inds[1]],genotypematrix[,x])}))
 
           }else{
-            kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-rowMeans(sapply(related,function(x){
+            kinshipmatrix[pair,c("kinshipKIMGENS","IBS0KIMGENS")]<-rowMeans(sapply(related,function(x){
               hapdipking(genotypematrix[,inds[1]],genotypematrix[,inds[2]],genotypematrix[,x])}))
 
           }
         }
 
       }else{
-        kinshipmatrix[pair,c("kinshipRelBased","IBS0RelBased")]<-NA
+        kinshipmatrix[pair,c("kinshipKIMGENS","IBS0KIMGENS")]<-NA
       }
 
     }
@@ -107,7 +110,7 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
 #'
 #' @param dipref
 #' A vector encoding the genotype of the reference diploid individual (0,1,2).
-#' Perform vanilla KING-robust if none provided.
+#' Perform exKING-robust if none provided.
 #'
 #' @export
 #'
@@ -115,9 +118,9 @@ kinship<-function(genotypematrix,ploidy=NA,skipRelBased=F,RelBasedKinshipThresho
 #' ##Calculate kinship of a pair of full siblings
 #' dip<-rbinom(1000,2,0.5)
 #' hap<-rbinom(1000,1,0.5)
-#' ### without reference(vanilla)
+#' ### without reference(exKING-robust)
 #' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1))
-#' ### with reference(relative-based)
+#' ### with reference(KIMGENS)
 #' dipking(anastomosis(meiosis(dip),hap),anastomosis(meiosis(dip),hap1),dipref=dip1)
 dipking<-function(dip1,dip2,dipref=NA){
   if(all(is.na(dipref))){
@@ -168,7 +171,7 @@ dipking<-function(dip1,dip2,dipref=NA){
 #'
 #' @param dipref
 #' A vector encoding the genotype of the reference diploid individual (0,1,2).
-#' Perform vanilla hap-dip kinship estimation if none provided.
+#' Perform exKING-robust hap-dip kinship estimation if none provided.
 #'
 #' @export
 #'
@@ -176,9 +179,9 @@ dipking<-function(dip1,dip2,dipref=NA){
 #' ##Calculate kinship of a pair of full siblings
 #' dip<-rbinom(1000,2,0.5)
 #' hap<-rbinom(1000,1,0.5)
-#' ### without reference(vanilla)
+#' ### without reference(exKING-robust)
 #' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip))
-#' ### with reference(relative-based)
+#' ### with reference(KIMGENS)
 #' hapdipking(anastomosis(meiosis(dip),hap),meiosis(dip),dipref=dip)
 hapdipking<-function(dip,hap,dipref=NA){
   if(all(is.na(dipref))){
@@ -227,7 +230,7 @@ hapdipking<-function(dip,hap,dipref=NA){
 #' @examples
 #' ##Calculate kinship of a pair of full siblings
 #' dip<-rbinom(1000,2,0.5)
-#' ### No Vanilla
+#' ### No exKING-robust
 #' hapking(meiosis(dip),meiosis(dip),dipref=dip)
 hapking<-function(hap1,hap2,dipref){
   if(length(dipref)==0){

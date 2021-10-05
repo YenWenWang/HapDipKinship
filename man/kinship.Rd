@@ -4,12 +4,7 @@
 \alias{kinship}
 \title{Kinship estimation}
 \usage{
-kinship(
-  genotypematrix,
-  ploidy = NA,
-  skipRelBased = F,
-  RelBasedKinshipThreshold = 0.1
-)
+kinship(genotypematrix, ploidy = NA, skipKIMGENS = F, KIMGENSThreshold = 0.1)
 }
 \arguments{
 \item{genotypematrix}{A matrix encoding genotypes with columns of individuals and rows of SNP sites. (0=homozygotic reference, 1=heterozygotic, 2=homozygotic alternative).}
@@ -19,10 +14,10 @@ First column is id (same as column names of genotype matrix).
 Second column is ploidy (1 or 2).
 Guess ploidy if not provided.}
 
-\item{skipRelBased}{Binary variable for skipping relative-based kinship estimates or not.
+\item{skipKIMGENS}{Binary variable for skipping KIMGENS kinship estimates or not.
 F if not provided. See 'Details.'}
 
-\item{RelBasedKinshipThreshold}{A kinship threshold for defining "relatives" in relative-based kinship. 0.1 if not provided. See 'Details.'}
+\item{KIMGENSThreshold}{A kinship threshold for defining "relatives" in KIMGENS kinship. 0.1 if not provided. See 'Details.'}
 }
 \value{
 A dataframe encoding kinship and IBS0 for every pair of individuals
@@ -32,14 +27,17 @@ Estimates kinships for all combinations of pairs of individuals.
 }
 \details{
 This functions takes two step:
-The first step use KING-robust (Manichaikul et al. 2010) and XXX (new algorithm) to estimate kinship between two diploids and kinship between a haploid and a diploid.
+The first step use exKING-robust (including KING-robust (Manichaikul et al. 2010)) to estimate kinship between two diploids and kinship between a haploid and a diploid.
 The second step use individuals related to the two individuals of interest as "references" to estimate kinship.
 The median of kinships from relatives of either individuals are averaged to estimate the correct kinship
-Relatives are defined by if the kinship estimates from the first step are larger than RelBasedKinshipThreshold.
+Relatives are defined by if the kinship estimates from the first step are larger than KIMGENSThreshold.
 Skipping this step will skip haploid-haploid kinship estimate.
 }
 \examples{
-tbd
+ancestrygenomatrix<-PopulationSim(1000,c(0.05,0.15,0.25))
+ancestry<-matrix(c(6,2,0.3,2,6,0.3),nrow=3)
+pedgeno<-HapdipPedigreeSim(ancestrygenomatrix,pedigree[1:18,],ancestry)
+kinship(pedgeno)
 }
 \references{
 TBD
