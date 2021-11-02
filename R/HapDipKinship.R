@@ -67,7 +67,7 @@ kinship<-function(genotypematrix,ploidy=NA,skipKIMGENS=F,KIMGENSThreshold=0.1){
       svMisc::progress(pair,nrow(kinshipmatrix))
       inds<-c(kinshipmatrix$V1[pair],kinshipmatrix$V2[pair])
       submatrix<-lapply(inds,function(x)kinshipmatrix[kinshipmatrix$V1==x|kinshipmatrix$V2==x,])
-      related<-lapply(submatrix,function(x)which(x$kinship>KIMGENSThreshold))
+      related<-lapply(submatrix,function(x)which(x$kinshipexKING>KIMGENSThreshold))
       related<-mapply(function(x,y)unique(c(y$V1[x][y$V1[x]%in%ploidy$id[ploidy$ploidy==2]],
                         y$V2[x][y$V2[x]%in%ploidy$id[ploidy$ploidy==2]])),related,submatrix)
       related<-mapply(function(x,y){if(ploidy$ploidy[ploidy$id==y]==2){unique(c(x,y))}else{x}},related,inds,SIMPLIFY = F)
