@@ -3,6 +3,7 @@
 export(DipPedigreeSim)
 export(ExtractPairsOfInterest)
 export(HapdipPedigreeSim)
+export(KIMGENSThresholdChooser)
 export(PopulationSim)
 export(anastomosis)
 export(dipking)
