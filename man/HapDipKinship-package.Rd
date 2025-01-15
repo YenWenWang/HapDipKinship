@@ -14,11 +14,11 @@ They are largely inspired by KING-robust (Manichaikul, et al. 2010).
 The package also offers some simple simulation to test the algorithms.
 }
 \references{
-Wang et al. in prep. Kinship algorithm for haploid-diploid mixed populations.
+Wang, Y-W and Ané, C. 2022. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure. Bioinformatics 38(11):3044-3050.
 Manichaikul, et al. 2010. Robust relationship inference in genome-wide association studies. Bioinformatics 26(22): 2867–2873.
 }
 \author{
-\strong{Maintainer}: Yen-Wen Wang \email{ywang883@wisc.edu} (\href{https://orcid.org/0000-0002-6851-1646}{ORCID})
+\strong{Maintainer}: Yen-Wen Wang \email{yen-wen.wang@yale.edu} (\href{https://orcid.org/0000-0002-6851-1646}{ORCID})
 
 }
 \keyword{internal}

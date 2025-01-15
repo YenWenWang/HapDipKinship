@@ -17,7 +17,7 @@
 #' @param KIMGENSThreshold
 #' A kinship threshold for defining "relatives" in KIMGENS kinship. 0.1 if not provided. See 'Details.'
 #'
-#' @return A dataframe encoding kinship and IBS0 for every pair of individuals
+#' @return A data frame encoding kinship and IBS0 for every pair of individuals
 #' @details
 #' This functions takes two step:
 #' The first step use exKING-robust (including KING-robust (Manichaikul et al. 2010)) to estimate kinship between two diploids and kinship between a haploid and a diploid.
@@ -27,7 +27,7 @@
 #' Skipping this step will skip haploid-haploid kinship estimate.
 #'
 #' @references
-#' TBD
+#' Wang, Y-W and Ané, C. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure. Bioinformatics 38(11):3044-3050.
 #'
 #' @export
 #'
@@ -37,7 +37,15 @@
 #' pedgeno<-HapdipPedigreeSim(ancestrygenomatrix,pedigree[1:18,],ancestry)
 #' kinship(pedgeno)
 kinship<-function(genotypematrix,ploidy=NA,skipKIMGENS=F,KIMGENSThreshold=0.1){
-  if(any(is.na(ploidy))){
+  HeterozygosityCheck<-apply(genotypematrix,2,function(x)1-sum(x==1)/sum(!is.na(x))) ## check if there are highly homozygous samples
+  if(any(HeterozygosityCheck>0.9)){
+    warning(paste0("Sample(s) ",
+                   paste(names(HeterozygosityCheck)[which(HeterozygosityCheck>0.9)],collapse = ", "),
+                   " has heterozygosity < 10%! Are they haploids?\n",
+                   "Continuing but please check if the genotype matrix is coded correctly."))
+  }
+
+  if(any(is.na(ploidy))){ ## infer ploidy
     temp<-ifelse(apply(genotypematrix,2,function(x)any(x==2,na.rm = T)),2,1)
     ploidy<-data.frame(id=names(temp),ploidy=temp)
   }else if(!all(ploidy$id%in%colnames(genotypematrix))){  ##check if everyone has ploidy coded

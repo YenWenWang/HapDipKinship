@@ -20,7 +20,7 @@ F if not provided. See 'Details.'}
 \item{KIMGENSThreshold}{A kinship threshold for defining "relatives" in KIMGENS kinship. 0.1 if not provided. See 'Details.'}
 }
 \value{
-A dataframe encoding kinship and IBS0 for every pair of individuals
+A data frame encoding kinship and IBS0 for every pair of individuals
 }
 \description{
 Estimates kinships for all combinations of pairs of individuals.
@@ -40,5 +40,5 @@ pedgeno<-HapdipPedigreeSim(ancestrygenomatrix,pedigree[1:18,],ancestry)
 kinship(pedgeno)
 }
 \references{
-TBD
+Wang, Y-W and Ané, C. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure. Bioinformatics 38(11):3044-3050.
 }

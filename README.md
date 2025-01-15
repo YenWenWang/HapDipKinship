@@ -48,4 +48,4 @@ kins<-kinship(pedigreegeno,ploidy)
 
 
 ## Reference
-Wang, Y-W and Ané, C. in prep. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure.
+Wang, Y-W and Ané, C. 2022. KIMGENS: A novel method to estimate kinship in organisms with mixed haploid diploid genetic systems robust to population structure. Bioinformatics 38(11):3044-3050.

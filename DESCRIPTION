@@ -1,11 +1,11 @@
 Package: HapDipKinship
 Title: HapDipKinship: Kinship estimation in haploid-diploid populations
-Version: 0.0.0.9000
+Version: 1.0.0.0000
 Authors@R: 
     person(given = "Yen-Wen",
            family = "Wang",
            role = c("aut", "cre"),
-           email = "ywang883@wisc.edu",
+           email = "yen-wen.wang@yale.edu",
            comment = c(ORCID = "0000-0002-6851-1646"))
 Description: This package is for estimating kinship and simulating pedigrees in a haploid-diploid mixed dataset. 
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
@@ -13,7 +13,7 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.3.2
 Imports:
 	gtools (>= 3.9.2),
 	svMisc (>= 1.1.4),
